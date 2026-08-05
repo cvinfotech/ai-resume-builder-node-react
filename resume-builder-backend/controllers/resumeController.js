@@ -85,9 +85,6 @@ export const getResume = async (req, res) => {
 // Update Resume
 export const updateResume = async (req, res) => {
   try {
-    console.log("Body:", req.body);
-    console.log("File:", req.file);
-
     const resume = await Resume.findOneAndUpdate(
       {
         _id: req.params.id,

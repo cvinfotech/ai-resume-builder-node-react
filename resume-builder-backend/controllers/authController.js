@@ -305,15 +305,11 @@ export const resendForgotPasswordOTP = async (req, res) => {
 // Login User
 export const login = async (req, res) => {
   try {
-    console.log("Login body:", req.body);
+    console.log("Request Body:", req.body);
 
     const { email, password } = req.body;
 
-    console.log("Searching user...");
-
     const user = await User.findOne({ email });
-
-    console.log("User:", user);
 
     if (!user) {
       return res.status(400).json({
@@ -322,14 +318,24 @@ export const login = async (req, res) => {
       });
     }
 
-    console.log("Checking password...");
+    if (!user.isVerified) {
+      return res.status(401).json({
+        success: false,
+        message: "Please verify your email first.",
+      });
+    }
 
+    // Compare Password
     const isMatch = await bcrypt.compare(password, user.password);
 
-    console.log("Password Match:", isMatch);
+    if (!isMatch) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid Email or Password",
+      });
+    }
 
-    console.log("JWT Secret:", process.env.JWT_SECRET);
-
+    // JWT Token
     const token = jwt.sign(
       {
         id: user._id,
@@ -340,14 +346,17 @@ export const login = async (req, res) => {
       },
     );
 
-    console.log("Token Created");
-
-    res.json({
+    res.status(200).json({
       success: true,
+      message: "Login Successful",
       token,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+      },
     });
   } catch (error) {
-    console.error(error); // <----- IMPORTANT
     res.status(500).json({
       success: false,
       message: error.message,

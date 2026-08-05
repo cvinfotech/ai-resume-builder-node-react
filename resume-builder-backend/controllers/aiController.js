@@ -2,9 +2,10 @@
 import { GoogleGenAI } from "@google/genai";
 import { log } from "console";
 
-const genAI = new GoogleGenAI(process.env.GEMINI_API_KEY);
-// const models = await genAI.listModels();
-// console.log(genAI);
+const genAI = new GoogleGenAI({
+  apiKey: process.env.GEMINI_API_KEY,
+});
+console.log(process.env.GEMINI_API_KEY);
 
 export const enhanceText = async (req, res) => {
   try {

@@ -1,18 +1,5 @@
 import express from "express";
 import upload from "../config/multer.js";
-import validationMiddleware from "../middleware/validationMiddleware.js";
-
-import {
-  signupValidation,
-  loginValidation,
-} from "../validators/authValidator.js";
-
-import {
-  loginLimiter,
-  signupLimiter,
-  forgotPasswordLimiter,
-  otpLimiter,
-} from "../middleware/rateLimit.js";
 
 import {
   signup,
@@ -34,28 +21,16 @@ import authMiddleware from "../middleware/authMiddleware.js";
 const router = express.Router();
 
 //Registeration
-router.post(
-  "/signup",
-  signupLimiter,
-  signupValidation,
-  validationMiddleware,
-  signup,
-);
+router.post("/signup", signup);
 router.post("/verify-email", verifyEmail);
-router.post("/resend-otp", otpLimiter, resendOTP);
+router.post("/resend-otp", resendOTP);
 
 //Login
-router.post(
-  "/login",
-  loginLimiter,
-  loginValidation,
-  validationMiddleware,
-  login,
-);
+router.post("/login", login);
 
 //Forgot paaword
-router.post("/forgot-password", forgotPasswordLimiter, forgotPassword);
-router.post("/forgot-password/resend-otp", otpLimiter, resendForgotPasswordOTP);
+router.post("/forgot-password", forgotPassword);
+router.post("/forgot-password/resend-otp", resendForgotPasswordOTP);
 router.post("/reset-password", resetPassword);
 
 //User Profile

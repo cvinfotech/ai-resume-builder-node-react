@@ -1,12 +1,27 @@
-const errorMiddleware = (err, req, res, next) => {
+import jwt from "jsonwebtoken";
 
-    console.log(err);
+const authMiddleware = (req, res, next) => {
+  try {
+    const token = req.headers.authorization?.split(" ")[1];
 
-    res.status(err.statusCode || 500).json({
-        success:false,
-        message:err.message || "Internal Server Error"
+    if (!token) {
+      return res.status(401).json({
+        success: false,
+        message: "Access Denied",
+      });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    req.user = decoded;
+
+    next();
+  } catch (error) {
+    res.status(401).json({
+      success: false,
+      message: "Invalid Token",
     });
-
+  }
 };
 
-export default errorMiddleware;
+export default authMiddleware;

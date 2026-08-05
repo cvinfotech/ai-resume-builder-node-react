@@ -1,7 +1,6 @@
 import express from "express";
+
 import authMiddleware from "../middleware/authMiddleware.js";
-import { createResumeValidation } from "../validators/resumeValidator.js";
-import validationMiddleware from "../middleware/validationMiddleware.js";
 
 import {
   saveResume,
@@ -15,13 +14,7 @@ import {
 
 const router = express.Router();
 
-router.post(
-  "/",
-  authMiddleware,
-  createResumeValidation,
-  validationMiddleware,
-  createResume,
-);
+router.post("/", authMiddleware, createResume);
 
 // Search Route (keep before :id)
 router.get("/search", authMiddleware, searchResume);
