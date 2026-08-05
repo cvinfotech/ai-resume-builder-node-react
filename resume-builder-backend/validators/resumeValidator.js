@@ -8,7 +8,7 @@ export const createResumeValidation = [
   body("personalInfo.full_name").optional().trim(),
 
   body("personalInfo.email")
-    .optional()
+    .optional({ values: "falsy" })
     .isEmail()
     .withMessage("Please enter a valid email"),
 
@@ -19,12 +19,12 @@ export const createResumeValidation = [
   body("personalInfo.profession").optional().trim(),
 
   body("personalInfo.linkedin")
-    .optional()
+    .optional({ values: "falsy" })
     .isURL()
     .withMessage("LinkedIn must be a valid URL"),
 
   body("personalInfo.website")
-    .optional()
+    .optional({ values: "falsy" })
     .isURL()
     .withMessage("Website must be a valid URL"),
 
