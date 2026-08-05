@@ -1,4 +1,5 @@
 # ai-resume-builder-node-react
+
 AI-powered Resume Builder built with React, Node.js, Express, and MongoDB. Create professional resumes with AI-assisted content generation, switch between multiple templates with real-time preview, and export resumes as PDF.
 
 A modern AI Resume Builder built with:
@@ -8,7 +9,7 @@ A modern AI Resume Builder built with:
 - ExpressJS
 - MongoDB
 
-Features
+## Features
 
 ✔ Create Resume
 ✔ Multiple Templates
@@ -16,36 +17,27 @@ Features
 ✔ Authentication
 ✔ Responsive Design
 
-Tech Stack
+## Tech Stack
 
-Frontend
+### Frontend
+
 - React
 - Redux
 - Bootstrap
 
-Backend
+### Backend
+
 - NodeJS
 - Express
 
-Database
+### Database
+
 - MongoDB
 
-Installation
+## Installation
 
+```bash
 git clone ...
-
 npm install
-
 npm run dev
-
-Screenshots
-
-...
-
-Folder Structure
-
-...
-
-License
-
-MIT
+```
