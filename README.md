@@ -44,4 +44,10 @@ npm run dev
 
 ## 📸 Screenshots
 
-![Login](images/img1.png)
+![Hero Section](images/img1.png)
+![Create Account](images/img2.png)
+![Login](images/image7.png)
+![Dashboard](images/img3.png)
+![Resume Creation](images/img4.png)
+![Resume Creation](images/img5.png)
+![template](images/img6.png)
