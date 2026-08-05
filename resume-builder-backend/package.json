@@ -24,6 +24,7 @@
     "mogoose": "^0.0.1-security",
     "mongodb": "^7.5.0",
     "mongoose": "^8.24.1",
+    "morgan": "^1.11.0",
     "multer": "^2.0.2",
     "nodemailer": "^9.0.3",
     "pdf-parse": "^1.1.4"

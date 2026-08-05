@@ -2,6 +2,7 @@ import helmet from "helmet";
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
+import morgan from "morgan";
 
 import connectDB from "./config/db.js";
 
@@ -67,6 +68,8 @@ const startServer = async () => {
     //     body: req.body,
     //   });
     // });
+
+    app.use(morgan("dev"));
 
     // Routes
     app.use("/api/auth", authRoutes);
