@@ -1,7 +1,7 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { postJson } from "../services/api";
-import { Mail, Lock, Eye, EyeOff, LogIn } from "lucide-react";
+import { Mail, Lock, Eye,  LogIn, EyeClosedIcon } from "lucide-react";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -9,6 +9,24 @@ const Login = () => {
   const [loading, setLoading] = React.useState(false);
   const [message, setMessage] = React.useState("");
   const [showPassword, setShowPassword] = React.useState(false);
+  const [emailError, setEmailError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  
+
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+ 
+
+  const validateEmail = (value: string) => {
+    if(!value.trim()) return "Email is required";
+    if(!emailRegex.test(value.trim())) return "Invalid Email format";
+    return "";
+  }
+
+  const validatePassword = (value: string) => {
+    if(!value.trim()) return "Password is required";
+    return "";
+  }
 
   const [formData, setFormData] = React.useState({
     email: "",
@@ -22,9 +40,20 @@ const Login = () => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setLoading(true);
+   
     setMessage("");
 
+    const emailValidateMsg = validateEmail(formData.email);
+    setEmailError(emailValidateMsg);
+
+
+    const passwordValidateMsg = validatePassword(formData.password);
+    setPasswordError(passwordValidateMsg);
+
+    if(emailValidateMsg || passwordValidateMsg) {
+      return;
+    }
+     setLoading(true);
     try {
       const data = await postJson<{
         message?: string;
@@ -81,10 +110,13 @@ const Login = () => {
             placeholder="Email id"
             className="w-full h-full bg-transparent text-white placeholder-white/40 border-none outline-none text-sm"
             value={formData.email}
-            onChange={handleChange}
+            onChange={(e) => {handleChange(e); if(emailError) setEmailError("");}}
             required
           />
         </div>
+        {emailError && (
+          <p className = "mt-1.5 text-xs text-red-300 text-left pl-1">{emailError}</p>
+        )}
 
         <div className="flex items-center w-full mt-3 bg-white/5 ring-1 ring-white/10 focus-within:ring-2 focus-within:ring-indigo-500 h-13 rounded-xl overflow-hidden pl-4 gap-3 transition-all">
           <Lock className="size-4 text-white/50 shrink-0" />
@@ -94,7 +126,7 @@ const Login = () => {
             placeholder="Password"
             className="w-full h-full bg-transparent text-white placeholder-white/40 border-none outline-none text-sm"
             value={formData.password}
-            onChange={handleChange}
+            onChange={(e) => {handleChange(e); if(passwordError) setPasswordError("");}}
             required
           />
           <button
@@ -104,12 +136,16 @@ const Login = () => {
             tabIndex={-1}
           >
             {showPassword ? (
-              <EyeOff className="size-4" />
-            ) : (
               <Eye className="size-4" />
+            ) : (
+              <EyeClosedIcon className="size-4" />
             )}
           </button>
         </div>
+        {passwordError && (
+          <p className = "mt-1.5 text-xs text-red-300 text-left pl-1">{passwordError}</p>
+        ) }
+        
 
         <div className="mt-3 text-right">
           <Link

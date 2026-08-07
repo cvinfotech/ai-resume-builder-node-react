@@ -1,11 +1,13 @@
 import { uploadResumePDF } from "../services/pdfService";
 
 import {
+  CheckCircle2,
   FilePenIcon,
   PencilIcon,
   PlusIcon,
   TrashIcon,
   UploadCloudIcon,
+  XCircle,
   XIcon,
 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -37,13 +39,22 @@ const Dashboard = () => {
   const [allResumes, setAllResumes] = useState<Resume[]>([]);
   const [showCreateResume, setShowCreateResume] = useState<boolean>(false);
   const [showUploadResume, setShowUploadResume] = useState<boolean>(false);
-  const [title, setTitle] = useState("");
+  const [titlee, setTitlee] = useState("");
   // const [resume, setResume] = useState<File | null>(null);
   const [editResumeId, setEditResumeId] = useState<string>("");
   // const [resumeFile, setResumeFile] = useState<File | null>(null);
 
   const [resume, setResume] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [toast, setToast] = useState<{ type: "success" | "error"; message: string} | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string>("");
+  const [titleError, setTitleError] = useState("");
+
+  useEffect(() =>{
+    if(!toast) return;
+    const timer = setTimeout(() => setToast(null),3000);
+    return () => clearTimeout(timer);
+  },[toast]);
 
   const loadAllResumes = async () => {
     try {
@@ -55,20 +66,26 @@ const Dashboard = () => {
   };
 
   const createResume = async (event: React.ChangeEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    try {
-      const data = await postJson<{ resume: Resume }>("/api/resume", {
-        title,
-        personalInfo: {},
-      });
+  event.preventDefault();
 
-      setShowCreateResume(false);
-      setTitle("data.resume.title");
-      navigate(`/app/builder/${data.resume._id}`);
-    } catch (error) {
-      console.error(error);
-    }
-  };
+  if (!titlee.trim()) {
+    setTitleError("Title is required");
+    return;
+  }
+
+  try {
+    const data = await postJson<{ resume: Resume }>("/api/resume", {
+      title: titlee,
+      personalInfo: {},
+    });
+
+    setShowCreateResume(false);
+    setTitlee("data.resume.title");
+    navigate(`/app/builder/${data.resume._id}`);
+  } catch (error) {
+    console.error(error);
+  }
+};
 
   // const uploadResume = async (event: React.ChangeEvent<HTMLFormElement>) => {
   //   event.preventDefault();
@@ -80,7 +97,7 @@ const Dashboard = () => {
     event.preventDefault();
 
     if (!resume) {
-      alert("Please select a PDF.");
+      setToast({ type: "error", message: "Please select a resume file to upload."});
       return;
     }
 
@@ -90,7 +107,7 @@ const Dashboard = () => {
       const token = localStorage.getItem("token");
 
       if (!token) {
-        alert("Please login first.");
+        setToast({ type: "error", message: "User not authenticated. Please log in."});
         return;
       }
 
@@ -102,7 +119,7 @@ const Dashboard = () => {
     } catch (err) {
       console.error(err);
       setIsUploading(false);
-      alert("Resume upload failed.");
+      setToast({ type: "error", message: "Failed to upload resume. Please try again."});
     }
   };
 
@@ -110,30 +127,32 @@ const Dashboard = () => {
     event.preventDefault();
     if (!editResumeId) return;
     try {
-      await putJson(`/api/resume/${editResumeId}`, { title });
+      await putJson(`/api/resume/${editResumeId}`, { title: titlee });
       setEditResumeId("");
-      setTitle("");
+      setTitlee("");
       loadAllResumes();
     } catch (error) {
       console.error(error);
     }
   };
 
-  const deleteResume = async (resumeId: string) => {
-    const confirm = window.confirm(
-      "Are you sure you want to delete this resume ?",
-    );
-    if (confirm) {
-      try {
-        await deleteJson(`/api/resume/${resumeId}`);
-        setAllResumes((prev) =>
-          prev.filter((resume) => resume._id !== resumeId),
-        );
-      } catch (error) {
-        console.error(error);
-      }
-    }
-  };
+  const requestDeleteResume = (resumeId: string) => {
+  setConfirmDeleteId(resumeId);
+};
+
+const confirmDeleteResume = async () => {
+  if (!confirmDeleteId) return;
+  try {
+    await deleteJson(`/api/resume/${confirmDeleteId}`);
+    setAllResumes((prev) => prev.filter((resume) => resume._id !== confirmDeleteId));
+    setToast({ type: "success", message: "Resume deleted successfully." });
+  } catch (error) {
+    console.error(error);
+    setToast({ type: "error", message: "Failed to delete resume." });
+  } finally {
+    setConfirmDeleteId("");
+  }
+};
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     loadAllResumes();
@@ -240,13 +259,13 @@ const Dashboard = () => {
                   className="absolute top-1 right-1 group-hover:flex items-center hidden"
                 >
                   <TrashIcon
-                    onClick={() => deleteResume(resume._id)}
+                    onClick={() => requestDeleteResume(resume._id)}
                     className="size-7  p-1.5 hover:bg-white/50 rounded  transition-colors"
                   />
                   <PencilIcon
                     onClick={() => {
                       setEditResumeId(resume._id);
-                      setTitle(resume.title || "");
+                      setTitlee(resume.title || "");
                     }}
                     className="size-7 text-slate-700 p-1.5 hover:bg-white/50 rounded transition-colors"
                   />
@@ -258,6 +277,7 @@ const Dashboard = () => {
 
         {showCreateResume && (
           <form
+            noValidate
             onSubmit={createResume}
             onClick={() => setShowCreateResume(false)}
             className="fixed inset-0 bg-black/70 backdrop-blur bg-opacity-50 z-10 flex items-center justify-center "
@@ -267,23 +287,35 @@ const Dashboard = () => {
               className="relative bg-slate-50 border shadow-md rounded-lg w-full max-w-sm p-6"
             >
               <h2 className="text-xl font-bold mb-4 p-4">Create Resume</h2>
-              <input
-                onChange={(e) => setTitle(e.target.value)}
-                value={title}
+                <input
+                onChange={(e) => {
+                setTitlee(e.target.value);
+                if (titleError) setTitleError("");
+                }}
+                value={titlee}
                 type="text"
                 placeholder="Enter resume title"
-                className="w-full px-4 py-2 mb-4 focus:border-green-100 ring-green-500"
-                required
-              />
-              <button className="w-full mb-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors">
+                className={`w-full px-4 py-2 rounded ${
+                titleError
+                  ? "border border-red-400 focus:ring-2 focus:ring-red-300"
+                  : "border border-gray-300"
+                }`}
+                />
+                {titleError ? (
+                <p className="text-xs text-red-500 mt-1 mb-3">{titleError}</p>
+                ) : (
+                <div className="mb-4" />
+                )}
+                <button className="w-full mb-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors">
                 Create Resume
-              </button>
+                </button>
               <XIcon
-                className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 cursor-pointer transition-colors"
-                onClick={() => {
-                  setShowCreateResume(false);
-                  setTitle("");
-                }}
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 cursor-pointer transition-colors"
+              onClick={() => {
+              setShowCreateResume(false);
+              setTitlee("");
+              setTitleError("");
+              }}
               />
             </div>
           </form>
@@ -301,8 +333,8 @@ const Dashboard = () => {
             >
               <h2 className="text-xl font-bold mb-4 p-4">Upload Resume</h2>
               <input
-                onChange={(e) => setTitle(e.target.value)}
-                value={title}
+                onChange={(e) => setTitlee(e.target.value)}
+                value={titlee}
                 type="text"
                 placeholder="Enter resume title"
                 className="w-full px-4 py-2 mb-4 focus:border-green-100 ring-green-500"
@@ -369,7 +401,7 @@ const Dashboard = () => {
                 className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 cursor-pointer transition-colors"
                 onClick={() => {
                   setShowUploadResume(false);
-                  setTitle("");
+                  setTitlee("");
                 }}
               />
             </div>
@@ -388,8 +420,8 @@ const Dashboard = () => {
             >
               <h2 className="text-xl font-bold mb-4 p-4">Edit Resume Title</h2>
               <input
-                onChange={(e) => setTitle(e.target.value)}
-                value={title}
+                onChange={(e) => setTitlee(e.target.value)}
+                value={titlee}
                 type="text"
                 placeholder="Enter resume title"
                 className="w-full px-4 py-2 mb-4 focus:border-green-100 ring-green-500"
@@ -402,12 +434,62 @@ const Dashboard = () => {
                 className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 cursor-pointer transition-colors"
                 onClick={() => {
                   setEditResumeId("");
-                  setTitle("");
+                  setTitlee("");
                 }}
               />
             </div>
           </form>
         )}
+
+        {toast && (
+          <div className = "fixed top-6 left-1/3 z-50 animate-in fade-in slide-in-from-top-2 duration-300">
+            <div
+              className = {`flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg border min-w-70 max-w-70 ${
+                toast.type === "success"
+                  ? "bg-green-5 border-green-200 text-green-800"
+                  : "bg-red-50 border-red-200 text-red-800"
+              }`}
+        >
+          {toast.type === "success" ?  (
+            <CheckCircle2 className = "size-5 shrink-0 text-green-600"/>
+          ) : (
+            <XCircle className = "size-5 shrink-0 text-red-600"/>
+          )}
+          <p className = "text-sm font-medium flex-1">{toast.message}</p>
+          <button
+            onClick={()=> setToast(null)}
+            className = "text-xs opacity-60 hover:opacity-100 transition-opacity"
+            >
+              X
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Delete confirmation toast */}
+                    {confirmDeleteId && (
+                    <div className="fixed top-6 left-1/3 z-50 animate-in fade-in slide-in-from-top-2 duration-300">
+                    <div className="flex flex-col gap-3 px-4 py-3 rounded-lg shadow-lg border min-w-70 max-w-sm bg-white border-slate-200">
+                    <p className="text-sm font-medium text-slate-700">
+                    Are you sure you want to delete this resume?
+                    </p>
+                    <div className="flex justify-end gap-2">
+                    <button
+                    onClick={() => setConfirmDeleteId("")}
+                    className="px-3 py-1.5 text-xs rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors"
+                    >
+                    Cancel
+                    </button>
+                    <button
+                    onClick={confirmDeleteResume}
+                    className="px-3 py-1.5 text-xs rounded-md bg-red-600 hover:bg-red-500 text-white transition-colors"
+                    >
+                    Delete
+                    </button>
+                    </div>
+                    </div>
+                    </div>
+                    )}
       </div>
     </div>
   );

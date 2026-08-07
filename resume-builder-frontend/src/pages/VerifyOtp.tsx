@@ -110,7 +110,7 @@ const VerifyOtp = () => {
             inputMode="numeric"
             placeholder="Enter OTP"
             value={otp}
-            onChange={(e) => setOtp(e.target.value)}
+            onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
             maxLength={6}
             className="w-full text-center tracking-[0.5em] text-lg font-semibold px-3 py-2.5 bg-white/5 text-white placeholder-white/40 border border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
           />

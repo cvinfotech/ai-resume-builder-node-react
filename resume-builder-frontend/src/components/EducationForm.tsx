@@ -167,6 +167,7 @@ const EducationForm = ({
                   </label>
                   <input
                     ref={monthInputReff}
+                    min={education.graduation_StartDate || "1900-01"}
                     type="month"
                     value={education.graduation_EndDate || ""}
                     onChange={(e) =>

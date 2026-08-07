@@ -88,7 +88,7 @@ const SkillsForm = ({
       return;
     }
 
-    if (editingIndex === null && (e.key === "," || e.key === " ")) {
+    if (editingIndex === null && (e.key === ",")) {
       e.preventDefault();
       addSkill();
     }

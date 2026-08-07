@@ -14,9 +14,11 @@ type Experience = {
 const ExperienceForm = ({
   data,
   onChange,
+  onToast,
 }: {
   data: Experience[];
   onChange: (d: Experience[]) => void;
+  onToast: (toast: {type: "success" | "error"; message: string} | null) => void;
 }) => {
   const [loading, setLoading] = useState(false);
 
@@ -27,7 +29,7 @@ const ExperienceForm = ({
       const description = data[index]?.description || "";
 
       if (!description.trim()) {
-        alert("Please enter a job description first.");
+        onToast({type:"error", message: "Please enter a description first"});
         return;
       }
 
@@ -39,7 +41,7 @@ const ExperienceForm = ({
       updateExperience(index, "description", enhanced);
     } catch (error) {
       console.error(error);
-      alert("AI Enhancement Failed");
+      onToast({type:"error",message: "AI Enhancement Failed"});
     } finally {
       setLoading(false);
     }
@@ -194,17 +196,16 @@ const ExperienceForm = ({
                       <input
                         ref={monthInputReff}
                         type="month"
-                        min="2000-01"
                         max={currentMonth}
+                        min={experience.start_date || "1900-01"}
                         value={experience.end_date}
                         onFocus={() => monthInputReff.current?.showPicker()}
                         onChange={(e) =>
                           updateExperience(index, "end_date", e.target.value)
                         }
                         className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 disabled:bg-gray-100 focus:ring focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
-                        onKeyDown={(e) => e.preventDefault()}
+                        onKeyDown={(e) => {if(e.key !== "Tab" && e.key !== "Escape") e.preventDefault();}}
                         onPaste={(e) => e.preventDefault()}
-                        placeholder="End Date"
                       />
                     </div>
                   )}
