@@ -8,6 +8,15 @@ const ForgotPassword = () => {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [emailError, setEmailError] = useState("");
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  const validateEmail = (value:string) => {
+    if(!value.trim()) return "Email is requird";
+    if(!emailRegex.test(value.trim())) return "Invalid Email format";
+    return "";
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -16,6 +25,13 @@ const ForgotPassword = () => {
     if (!email.trim()) {
       setError("Please enter your email");
       return;
+    }
+
+    const emailValidationMsg = validateEmail(email);
+    setEmailError(emailValidationMsg);
+
+    if(emailValidationMsg) {
+      return ;
     }
 
     setLoading(true);
@@ -53,11 +69,14 @@ const ForgotPassword = () => {
               type="email"
               placeholder="you@example.com"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {setEmail(e.target.value); if(emailError) setEmailError("");}}
               className="w-full pl-10 pr-3 py-2.5 text-sm bg-white/5 text-white placeholder-white/40 border border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
             />
           </div>
 
+          {emailError && (
+            <p className = "mt-1.5 text-xs text-2xl text-2xl text-red-300 text-left pl-1">{emailError}</p>
+          )}
           {error && <p className="text-sm text-red-300">{error}</p>}
 
           <button

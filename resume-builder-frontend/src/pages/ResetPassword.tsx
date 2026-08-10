@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { Eye, EyeOff, Lock } from "lucide-react";
+import { Eye, EyeClosedIcon,  Lock } from "lucide-react";
 
 const ResetPassword = () => {
   const navigate = useNavigate();
@@ -12,10 +12,18 @@ const ResetPassword = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [newPasswordError, setNewPasswordError] = useState("");
 
   const [showNewpassword, setShowNewpassword] = useState(false);
   const [showReenterpassword, setShowReenterpassword] = useState(false);
 
+  const PasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/;
+
+  const validateNewPassword = (value: string) => {
+    if(!value.trim() )return "New password is required";
+    if(!PasswordRegex.test(value.trim())) return "New password must be at least 8 characters long, contain at least one uppercase letter, one lowercase letter, one number, and one special character";
+    return "";
+  }
   useEffect(() => {
     if (!email) {
       navigate("/forgot-password", { replace: true });
@@ -31,10 +39,14 @@ const ResetPassword = () => {
       return;
     }
 
-    if (password.length < 6) {
-      setError("Password must be at least 6 characters");
+    const newPasswordValidationMsg = validateNewPassword(password);
+    setNewPasswordError(newPasswordValidationMsg);
+
+    if(newPasswordValidationMsg) {
       return;
     }
+
+  
 
     if (password !== confirmPassword) {
       setError("Passwords do not match");
@@ -80,7 +92,7 @@ const ResetPassword = () => {
               type={showNewpassword ? "text" : "password"}
               placeholder="New password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+            onChange={(e) =>{setPassword(e.target.value); if(newPasswordError) setNewPasswordError("");}}
               className="w-full pl-10 pr-10 py-2.5 text-sm bg-white/5 text-white placeholder-white/40 border border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
             />
             <button
@@ -90,12 +102,15 @@ const ResetPassword = () => {
               tabIndex={-1}
             >
               {showNewpassword ? (
-                <EyeOff className="size-4" />
-              ) : (
                 <Eye className="size-4" />
+              ) : (
+                <EyeClosedIcon  className="size-4" />
               )}
             </button>
           </div>
+          {newPasswordError && (
+            <p className="text-sm text-red-300">{newPasswordError}</p>
+          )}
 
           <div className="relative">
             <Lock className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-white/50" />
@@ -113,9 +128,9 @@ const ResetPassword = () => {
               tabIndex={-1}
             >
               {showReenterpassword ? (
-                <EyeOff className="size-4" />
-              ) : (
                 <Eye className="size-4" />
+              ) : (
+                <EyeClosedIcon  className="size-4" />
               )}
             </button>
           </div>

@@ -35,6 +35,7 @@ const ResumeBuilder = () => {
 
   // NEW: controls the full-screen preview overlay after final save
   const [showFullPreview, setShowFullPreview] = useState(false);
+  const [showPersonalErrors, setShowPersonalErrors] = useState(false);
 
   const [resumeData, setResumeData] = useState({
     id: "",
@@ -77,7 +78,7 @@ const ResumeBuilder = () => {
         public: resume?.public || false,
       });
 
-      document.title = resume?.title || document.title;
+     
     } catch (error) {
       console.error(error);
     }
@@ -129,8 +130,39 @@ const ResumeBuilder = () => {
       ? (activeSectionIndex * 100) / (sections.length - 1)
       : 0;
 
+      const emailFormatRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   // NEW: checks if the currently active section has incomplete data
   const validateCurrentSection = (): string | null => {
+
+    if(activeSection.id === "personal") {
+      const personalInfo = resumeData.personal_info as {
+        full_name?: string;
+        firstName?: string;
+        name?: string;
+        email?: string;
+      };
+
+      const fullName =
+      personalInfo.full_name?.trim() ||
+      personalInfo.firstName?.trim() ||
+      personalInfo.name?.trim();
+      const email = personalInfo.email?.trim();
+
+
+      if (!fullName || !email) {
+      return "Please enter your full name and email before continuing";
+    }
+
+    if (fullName.length < 2) {                          // NEW
+    return "Full name must be at least 2 characters";  // NEW
+  }
+
+     if (!emailFormatRegex.test(email)) {          // NEW
+    return "Please enter a valid email address before continuing";
+  }
+    }
+
+
     if (activeSection.id === "summary") {
       if (!resumeData.professional_summary?.trim()) {
         return "Please enter your professional summary before continuing";
@@ -182,13 +214,15 @@ const ResumeBuilder = () => {
         company?: string;
         position?: string;
         description?: string;
+       start_date?: string; 
       }>;
 
       const hasIncompleteExperience = experience.some(
         (exp) =>
           !exp.company?.trim() ||
           !exp.position?.trim() ||
-          !exp.description?.trim(),
+          !exp.description?.trim() ||
+          !exp.start_date?.trim(),
       );
 
       if (hasIncompleteExperience) {
@@ -211,13 +245,22 @@ const ResumeBuilder = () => {
     window.print();
   };
 
-  const handleSave = async () => {
+
+
+
+const handleSave = async () => {
+ 
+
     // NEW: block save if the current section has incomplete data
     const sectionError = validateCurrentSection();
-    if (sectionError) {
-      setToast({ type: "error", message: sectionError });
-      return;
-    }
+
+  if (activeSection.id === "personal") {
+    setShowPersonalErrors(!!sectionError);
+    if (sectionError) return;
+  } else if (sectionError) {
+    setToast({ type: "error", message: sectionError });
+    return;
+  }
 
     const personalInfo = resumeData.personal_info as {
       full_name?: string;
@@ -430,16 +473,21 @@ const ResumeBuilder = () => {
                     </button>
                   )}
                   <button
-                    onClick={() => {
+                      onClick={() => {
                       const error = validateCurrentSection();
-                      if (error) {
-                        setToast({ type: "error", message: error });
-                        return;
+
+                      if (activeSection.id === "personal") {
+                      setShowPersonalErrors(!!error);
+                      if (error) return;
+                      } else if (error) {
+                      setToast({ type: "error", message: error });
+                      return;
                       }
+
                       setActiveSectionIndex((prevIndex) =>
-                        Math.min(prevIndex + 1, sections.length - 1),
+                      Math.min(prevIndex + 1, sections.length - 1),
                       );
-                    }}
+                      }}
                     className={`flex items-center gap-1 p-3 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 transition-all  ${activeSectionIndex === sections.length - 1 ? "opacity-50" : ""}`}
                     disabled={activeSectionIndex === sections.length - 1}
                   >
@@ -458,6 +506,8 @@ const ResumeBuilder = () => {
                           personal_info: data,
                         }))
                       }
+                      onToast={setToast}
+                      showErrors={showPersonalErrors} // NEW: always show required-field errors for Personal Info
                     />
                   )}
 
@@ -480,6 +530,7 @@ const ResumeBuilder = () => {
                       onChange={(data: any) =>
                         setResumeData((prev) => ({ ...prev, experience: data }))
                       }
+                      onToast={setToast}
                     />
                   )}
 
@@ -610,7 +661,7 @@ const ResumeBuilder = () => {
 
       {/* Toast Notification */}
       {toast && (
-        <div className="fixed top-6 right-6 z-50 animate-in fade-in slide-in-from-top-2 duration-300">
+        <div className="fixed top-6 left-1/3 z-50 animate-in fade-in slide-in-from-top-2 duration-300">
           <div
             className={`flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg border min-w-70 max-w-sm ${
               toast.type === "success"

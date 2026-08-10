@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { Mail, Lock, User, Eye, EyeOff, UserPlus } from "lucide-react";
+import { Mail, Lock, User, Eye, UserPlus, EyeClosedIcon } from "lucide-react";
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -10,15 +10,49 @@ const Signup = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [emailError, setEmailError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
- 
+  const [passwordError, setPasswordError] = useState("");
+  
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  const validateEmail = (value: string) => {
+    if(!value.trim()) return "Email is required";
+    if(!emailRegex.test(value.trim())) return "Invalid Email format";
+    return "";
+  }
+
+  const  passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+
+  const validatePassword  = (value: string) => {
+    if(!value.trim()) return "Password is required";
+    if(!passwordRegex.test(value.trim())) return "Password must be at Least 8 characers long, contain at Least one uppercase Letter, one Lowercase Letter, one Number and one Special Character";
+    return "";
+  }
+
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
+   const emailValidationMsg = validateEmail(email);
+   setEmailError(emailValidationMsg); 
+
+   const passwordValidationMsg = validatePassword(password);
+   setPasswordError(passwordValidationMsg);
+
     if (!name.trim() || !email.trim() || !password) {
       setError("Please fill all fields");
+      return;
+    }
+
+    if(emailValidationMsg) {
+      return;
+    }
+
+    if(passwordValidationMsg) {
       return;
     }
 
@@ -87,11 +121,18 @@ const Signup = () => {
             type="email"
             placeholder="Email id"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => {setEmail(e.target.value);
+              if (emailError) setEmailError("");
+            }}
             className="w-full h-full bg-transparent text-white placeholder-white/40 border-none outline-none text-sm"
             required
           />
         </div>
+        {emailError && (
+          <p className = "mt-1.5 text-xs text-red-300 text-left pl-1">
+            {emailError}
+          </p>
+        )}
 
         <div className="flex items-center w-full mt-3 bg-white/5 ring-1 ring-white/10 focus-within:ring-2 focus-within:ring-indigo-500 h-13 rounded-xl overflow-hidden pl-4 gap-3 transition-all">
           <Lock className="size-4 text-white/50 shrink-0" />
@@ -99,7 +140,7 @@ const Signup = () => {
             type={showPassword ? "text" : "password"}
             placeholder="Password"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={(e) => {setPassword(e.target.value); if(passwordError) setPasswordError("");}}
             className="w-full h-full bg-transparent text-white placeholder-white/40 border-none outline-none text-sm"
             required
           />
@@ -110,12 +151,17 @@ const Signup = () => {
             tabIndex={-1}
           >
             {showPassword ? (
-              <EyeOff className="size-4" />
-            ) : (
               <Eye className="size-4" />
+            ) : (
+              <EyeClosedIcon className="size-4" />
             )}
           </button>
         </div>
+         {passwordError && (
+            <p className = "mt-1.5 text-xs text-red-300 text-left pl-1">
+              {passwordError}
+            </p>
+          )}
 
         {error && (
           <p className="mt-4 text-sm text-red-300 bg-red-500/10 border border-red-500/20 rounded-lg py-2 px-3">

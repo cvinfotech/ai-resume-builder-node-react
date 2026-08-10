@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { Lock, CheckCircle2, XCircle, Eye, EyeOff } from "lucide-react";
+import { Lock, CheckCircle2, XCircle, Eye,  EyeClosedIcon } from "lucide-react";
 
 const ChangePassword = () => {
   const navigate = useNavigate();
@@ -11,6 +11,7 @@ const ChangePassword = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [newPasswordError, setNewPasswordError] = useState("");
   const [toast, setToast] = useState<{
     type: "success" | "error";
     message: string;
@@ -19,6 +20,15 @@ const ChangePassword = () => {
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  const newPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+
+  const validateNewPassword = (value: string) => {
+    if(!value.trim() )return "New password is required";
+    if(!newPasswordRegex.test(value.trim())) return "New password must be at least 8 characters long, contain at least one uppercase letter, one lowercase letter, one number, and one special character";
+    return "";
+  }
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,8 +39,11 @@ const ChangePassword = () => {
       return;
     }
 
-    if (newPassword.length < 6) {
-      setError("New password must be at least 6 characters");
+    
+    const newPasswordValidationMsg = validateNewPassword(newPassword);
+    setNewPasswordError(newPasswordValidationMsg);
+
+    if(newPasswordValidationMsg) {
       return;
     }
 
@@ -113,9 +126,9 @@ const ChangePassword = () => {
             tabIndex={-1}
           >
             {showCurrentPassword ? (
-              <EyeOff className="size-4" />
-            ) : (
               <Eye className="size-4" />
+            ) : (
+              <EyeClosedIcon className="size-4" />
             )}
           </button>
         </div>
@@ -126,7 +139,7 @@ const ChangePassword = () => {
             type={showNewPassword ? "text" : "password"}
             placeholder="New password"
             value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
+            onChange={(e) =>{setNewPassword(e.target.value); if(newPasswordError) setNewPasswordError("");}}
             className="w-full h-full bg-transparent text-white placeholder-white/40 border-none outline-none text-sm"
             required
           />
@@ -137,12 +150,15 @@ const ChangePassword = () => {
             tabIndex={-1}
           >
             {showNewPassword ? (
-              <EyeOff className="size-4" />
-            ) : (
               <Eye className="size-4" />
+            ) : (
+              <EyeClosedIcon className="size-4" />
             )}
           </button>
         </div>
+        {newPasswordError && (
+          <p className = "mt-1.5 text-xs text-red-300 text-left-pl-1">{newPasswordError}</p>
+        )}
 
         <div className="flex items-center w-full mt-3 bg-white/5 ring-1 ring-white/10 focus-within:ring-2 focus-within:ring-indigo-500 h-13 rounded-xl overflow-hidden pl-4 gap-3 transition-all">
           <Lock className="size-4 text-white/50 shrink-0" />
@@ -161,9 +177,9 @@ const ChangePassword = () => {
             tabIndex={-1}
           >
             {showConfirmPassword ? (
-              <EyeOff className="size-4" />
-            ) : (
               <Eye className="size-4" />
+            ) : (
+              <EyeClosedIcon className="size-4" />
             )}
           </button>
         </div>
