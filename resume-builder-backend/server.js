@@ -114,8 +114,106 @@ startServer();
 // "password": "123456"
 // }
 
-//post :http://localhost:5000/api/auth/login
+// post :http://localhost:5000/api/auth/login
 // {
 //   "email": "neeraj@gmail.com",
 //   "password": "123456"
+// }
+
+// new
+
+// import helmet from "helmet";
+// import express from "express";
+// import dotenv from "dotenv";
+// import cors from "cors";
+// import morgan from "morgan";
+
+// import connectDB from "./config/db.js";
+
+// import authRoutes from "./routes/authRoutes.js";
+// import resumeRoutes from "./routes/resumeRoutes.js";
+// import dashboardRoutes from "./routes/dashboardRoutes.js";
+// import uploadRoutes from "./routes/uploadRoutes.js";
+// import pdfRoutes from "./routes/pdfRoutes.js";
+// import otpRoutes from "./routes/otpRoutes.js";
+// import aiRoutes from "./routes/aiRoutes.js";
+
+// import errorMiddleware from "./middleware/errorMiddleware.js";
+
+// dotenv.config();
+
+// const app = express();
+
+// app.use(
+//   cors({
+//     origin: process.env.FRONTEND_URL,
+//     methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+//     credentials: true,
+//   }),
+// );
+
+// app.use(
+//   helmet({
+//     contentSecurityPolicy: false,
+//     crossOriginEmbedderPolicy: false,
+//   }),
+// );
+
+// app.use(express.json());
+// app.use(express.urlencoded({ extended: true }));
+
+// app.use(morgan("dev"));
+
+// // Routes
+// app.use("/api/auth", authRoutes);
+// app.use("/api/resume", resumeRoutes);
+// app.use("/api/upload", uploadRoutes);
+// app.use("/api/dashboard", dashboardRoutes);
+// app.use("/api/pdf", pdfRoutes);
+// app.use("/api/otp", otpRoutes);
+// app.use("/api/ai", aiRoutes);
+
+// // Test route
+// app.get("/", (req, res) => {
+//   res.json({
+//     success: true,
+//     message: "Resume Builder API Running 🚀",
+//   });
+// });
+
+// // Error middleware should be last
+// app.use(errorMiddleware);
+
+// // Connect DB
+// let dbConnected = false;
+
+// const initializeDB = async () => {
+//   if (!dbConnected) {
+//     await connectDB();
+//     dbConnected = true;
+//   }
+// };
+
+// // Vercel handler
+// export default async function handler(req, res) {
+//   try {
+//     await initializeDB();
+//     return app(req, res);
+//   } catch (error) {
+//     console.error("Database connection error:", error);
+
+//     return res.status(500).json({
+//       success: false,
+//       message: "Database connection failed",
+//     });
+//   }
+// }
+
+// // Local development
+// if (process.env.NODE_ENV !== "production") {
+//   const PORT = process.env.PORT;
+
+//   app.listen(PORT, () => {
+//     console.log(`Server Running on Port ${PORT}`);
+//   });
 // }
