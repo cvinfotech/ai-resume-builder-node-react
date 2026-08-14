@@ -1,3 +1,4 @@
+import cloudinary from "../config/cloudinary.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
@@ -555,9 +556,15 @@ export const updateProfile = async (req, res) => {
     user.email = email || user.email;
 
     if (req.file) {
-      user.profileImage = req.file.filename;
-    }
+      const result = await cloudinary.uploader.upload(
+        `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`,
+        {
+          folder: "resume-builder/profile",
+        },
+      );
 
+      user.profileImage = result.secure_url;
+    }
     await user.save();
 
     res.status(200).json({

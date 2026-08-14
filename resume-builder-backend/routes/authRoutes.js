@@ -1,5 +1,6 @@
 import express from "express";
-import upload from "../config/multer.js";
+// import upload from "../config/multer.js";
+import upload from "../middleware/upload.js";
 
 import {
   signup,

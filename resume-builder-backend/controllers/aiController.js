@@ -5,15 +5,9 @@ import { log } from "console";
 const genAI = new GoogleGenAI({
   apiKey: process.env.GEMINI_API_KEY,
 });
-console.log(process.env.GEMINI_API_KEY);
 
 export const enhanceText = async (req, res) => {
   try {
-    // console.log("========== AI REQUEST ==========");
-    // console.log("Body:", req.body);
-    // console.log("Section:", req.body.section);
-    // console.log("Text:", req.body.text);
-
     const { section, text } = req.body;
 
     if (!section || !text) {
@@ -22,9 +16,6 @@ export const enhanceText = async (req, res) => {
         message: "Section and text are required",
       });
     }
-    // const model = genAI.GoogleGenAI({
-    //   model: "gemini-3.6-flash",
-    // });
 
     const prompt = `
 You are a professional resume writer.
