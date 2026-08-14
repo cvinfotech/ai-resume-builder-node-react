@@ -93,8 +93,8 @@ const startServer = async () => {
     app.use(errorMiddleware);
 
     // app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
-    console.log("Current Working Directory:", process.cwd());
-    console.log("Uploads Path:", path.join(process.cwd(), "uploads"));
+    // console.log("Current Working Directory:", process.cwd());
+    // console.log("Uploads Path:", path.join(process.cwd(), "uploads"));
 
     app.listen(PORT, () => {
       console.log(`Server Running on Port ${PORT}`);
